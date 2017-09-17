@@ -15,14 +15,13 @@
 	  	var myEmail = 'ali@gmail.com';
 	  	var selectedDeveloperId = null;
 	  	var appId = '1';
+	  	var BASE_URL = 'http://localhost:3000';
 	  	function messageCallback(message) {
 	  		if(message.fromEmail === selectedEmail){
 	  			renderNewMessage(message.fromEmail, message);
+	  			scrollDown('chat-area');
 	  		}
-	  		if(message.fromEmail === myEmail){
-	  			renderNewMessage(message.fromEmail, message);
-	  			return ;
-	  		}
+
 	  		renderNewDeveloper(message.fromEmail, message.fromId,  message.chat_id);
 			if(messages[message.fromEmail] == null){
 				messages[message.fromEmail] = [message];
@@ -34,7 +33,7 @@
 		function userIdCallback(userId) {
 			myId = userId;
 			ajaxCall({
-				url: 'http://localhost:3000/chat?userId='+userId+'&isClient=true',
+				url: BASE_URL + '/chat?userId='+userId+'&isClient=true',
 				method: 'GET',
 				sucess: function(responseText){
 					var response = JSON.parse(responseText);
@@ -49,7 +48,7 @@
 				}
 			});
 		}
-		inAppChat.init({
+		InAppChat.init({
 			appId: appId,
 			email: myEmail
 		}, messageCallback, userIdCallback);
@@ -85,22 +84,22 @@
 				var message = emailMessages[i];
 				if(!message.is_client){
 					// not my message 
-					chatAreaElement.innerHTML += '<div class="receiver"><div class="username">'+email+'</div><div class="message">'+message.content+'</div><label class="time">'+new Date(message.created_at)+'</label></div>';
+					chatAreaElement.innerHTML += '<div class="receiver"><div class="username">'+email+'</div><br><br><div class="message">'+message.content+'</div><label class="time">'+new Date(message.created_at)+'</label></div>';
 				}else {
-					chatAreaElement.innerHTML += '<div class="sender"><div class="username">'+myEmail+'</div><div class="message">'+message.content+'</div><label class="time">'+new Date(message.created_at)+'</label></div>';
+					chatAreaElement.innerHTML += '<div class="sender"><div class="username">'+myEmail+'</div><br><br><div class="message">'+message.content+'</div><label class="time">'+new Date(message.created_at)+'</label></div>';
 				}
 			}
 		
-
+			scrollDown('chat-area');
 		}
 
 		function renderNewMessage(email, message) {
 			var chatAreaElement = document.getElementById('chat-area');
 			if(!message.is_client){
 				// not my message 
-				chatAreaElement.innerHTML += '<div class="receiver"><div class="username">'+email+'</div><div class="message">'+message.content+'</div><label class="time">'+new Date(message.created_at)+'</label></div>';
+				chatAreaElement.innerHTML += '<div class="receiver"><div class="username">'+email+'</div><br><br><div class="message">'+message.content+'</div><label class="time">'+new Date(message.created_at)+'</label></div>';
 			}else {
-				chatAreaElement.innerHTML += '<div class="sender"><div class="username">'+myEmail+'</div><div class="message">'+message.content+'</div><label class="time">'+new Date(message.created_at)+'</label></div>';
+				chatAreaElement.innerHTML += '<div class="sender"><div class="username">'+myEmail+'</div><br><br><div class="message">'+message.content+'</div><label class="time">'+new Date(message.created_at)+'</label></div>';
 			}
 		}
 
@@ -132,7 +131,7 @@
 				selectedEmail = email;
 				selectedDeveloperId = developerId;
 				ajaxCall({
-					url: 'http://localhost:3000/chat/'+chatId+'/messages',
+					url: BASE_URL + '/chat/'+chatId+'/messages',
 					method: 'GET',
 					sucess: function(responseText){
 						var response = JSON.parse(responseText);
@@ -147,9 +146,13 @@
 						console.log("error");
 					}
 				});
+				
 			});
 		}
-
+		function scrollDown(elementId) {
+			var objDiv = document.getElementById(elementId);
+			objDiv.scrollTop = objDiv.scrollHeight;
+		}
 		function initializeUi() {
 			document.getElementById("chat_button").addEventListener("click", function(){
 				var element = document.getElementById("container"); 
@@ -188,9 +191,16 @@
 			document.getElementById("send").addEventListener("click", function(){
 				var messagContent = document.getElementById("message").value;
 				document.getElementById("message").value = '';
-
+				var message = {
+					content: messagContent,
+					created_at: new Date(),
+					is_client: true
+				};
+				renderNewMessage(myEmail, message);
+				
+				scrollDown('chat-area');
 				ajaxCall({
-					url: 'http://localhost:3000/chat/'+appId+'/message?from='+myId+'&to='+selectedDeveloperId+'&content='+ messagContent+'&isClient=true',
+					url: BASE_URL + '/chat/'+appId+'/message?from='+myId+'&to='+selectedDeveloperId+'&content='+ messagContent+'&isClient=true',
 					method: 'POST',
 					sucess: function(responseText){
 						
@@ -226,10 +236,12 @@
 				
 				<!-- <div class="receiver">
 					<div class="username">mohamed@gmail.com</div>
-					<div class="message">HiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHi</div>
+					<br>
+					<br>
+					<div class="message">ffdd</div>
 					<label class="time">3:00 AM</label>
 				</div> -->
-			
+				<div id="scroll"></div>
 			</div>
 			<div class="message-area">
 				<textarea id="message" class="textarea-control"></textarea>

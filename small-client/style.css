@@ -18,7 +18,7 @@
 	height: 400px;
 }
 #chat-body{
-	overflow: auto;
+	/*overflow: auto;*/
 	height: 400px;
 	display: none;
 }
@@ -87,7 +87,7 @@
    	border-radius: 10px;
    	background-color: #1e6ba5;
    	font-size: 15px;
-   	/*border: 1px solid #000;*/
+   	border: 1px solid #000;
    	cursor: pointer;
    	margin: auto;
    	float: right;
@@ -104,7 +104,6 @@
 	margin-top: 10px;
 	padding-bottom: 5px;
 	text-align: left;
-	word-wrap: break-word;
 	margin-bottom: 10px;
 }
 
@@ -118,13 +117,13 @@
 	margin-top: 10px;
 	padding-bottom: 5px;
 	text-align: left;
-	word-wrap: break-word;
 	margin-bottom: 10px;
 }
 
 .message{
 	margin-top: 5px; 
 	margin-left: 5px;
+	word-wrap: break-word;
 }
 
 .time{
