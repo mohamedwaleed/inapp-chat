@@ -1,0 +1,24 @@
+{
+  "name": "chat-backend",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "sequelize db:migrate && node ./bin/www",
+    "initData": "sequelize db:migrate && sequelize db:seed:all"
+  },
+  "dependencies": {
+    "body-parser": "~1.17.1",
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.6.3",
+    "express": "~4.15.2",
+    "express-fileupload": "^0.2.0",
+    "jade": "~1.11.0",
+    "morgan": "~1.8.1",
+    "mysql": "^2.14.1",
+    "mysql2": "^1.4.2",
+    "sequelize": "^3.30.4",
+    "sequelize-cli": "^3.0.0-2",
+    "serve-favicon": "~2.4.2",
+    "socket.io": "^2.0.3"
+  }
+}
