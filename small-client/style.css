@@ -6,7 +6,7 @@
 	border-radius: 10px;
 	box-shadow: 10px 10px 5px #888888;
 	z-index: 100;
-	/*display: none;*/
+	display: none;
 }
 
 .center{
