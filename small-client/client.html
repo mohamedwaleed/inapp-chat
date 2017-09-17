@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>small client</title>
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
+	<script type="text/javascript" src="chat-sdk.js"></script>
+	<script type="text/javascript">
+
+	  window.onload = function() {
+
+	  	var messages = {};
+	  	var selectedEmail = null;
+	  	var myId = null;
+	  	var myEmail = 'ali@gmail.com';
+	  	var selectedDeveloperId = null;
+	  	var appId = '1';
+	  	function messageCallback(message) {
+	  		if(message.fromEmail === selectedEmail){
+	  			renderNewMessage(message.fromEmail, message);
+	  		}
+	  		if(message.fromEmail === myEmail){
+	  			renderNewMessage(message.fromEmail, message);
+	  			return ;
+	  		}
+	  		renderNewDeveloper(message.fromEmail, message.fromId,  message.chat_id);
+			if(messages[message.fromEmail] == null){
+				messages[message.fromEmail] = [message];
+			}else {
+				messages[message.fromEmail].push(message);
+			}
+		}
+
+		function userIdCallback(userId) {
+			myId = userId;
+			ajaxCall({
+				url: 'http://localhost:3000/chat?userId='+userId+'&isClient=true',
+				method: 'GET',
+				sucess: function(responseText){
+					var response = JSON.parse(responseText);
+					var chats = response.result;
+					for(var i = 0 ; i < chats.length ;  i ++ ){
+						renderNewDeveloper(chats[i].developer.email, chats[i].developer.id , chats[i].id);
+						messages[chats[i].developer.email] = [];
+					}
+				},
+				fail: function(){
+					console.log("error");
+				}
+			});
+		}
+		inAppChat.init({
+			appId: appId,
+			email: myEmail
+		}, messageCallback, userIdCallback);
+
+		function ajaxCall(requestObject) {
+			var xmlhttp = new XMLHttpRequest();
+
+		    xmlhttp.onreadystatechange = function() {
+		        if (xmlhttp.readyState == XMLHttpRequest.DONE ) {
+		           if (xmlhttp.status == 200) {
+						requestObject.sucess(xmlhttp.responseText);
+		           }else {
+		           		requestObject.fail(xmlhttp.status);
+		           }
+		        }
+		    };
+
+
+		    xmlhttp.open(requestObject.method, requestObject.url , true);
+		    xmlhttp.send();
+		}
+
+		function renderMessages(email) {
+			
+			var chatAreaElement = document.getElementById('chat-area');
+			var messagesKeys = Object.keys(messages);
+			var emailMessages = messages[email];
+			chatAreaElement.innerHTML = '';
+			console.log(emailMessages);
+
+
+			for(var i = 0 ; i < emailMessages.length ; i ++ ){
+				var message = emailMessages[i];
+				if(!message.is_client){
+					// not my message 
+					chatAreaElement.innerHTML += '<div class="receiver"><div class="username">'+email+'</div><div class="message">'+message.content+'</div><label class="time">'+new Date(message.created_at)+'</label></div>';
+				}else {
+					chatAreaElement.innerHTML += '<div class="sender"><div class="username">'+myEmail+'</div><div class="message">'+message.content+'</div><label class="time">'+new Date(message.created_at)+'</label></div>';
+				}
+			}
+		
+
+		}
+
+		function renderNewMessage(email, message) {
+			var chatAreaElement = document.getElementById('chat-area');
+			if(!message.is_client){
+				// not my message 
+				chatAreaElement.innerHTML += '<div class="receiver"><div class="username">'+email+'</div><div class="message">'+message.content+'</div><label class="time">'+new Date(message.created_at)+'</label></div>';
+			}else {
+				chatAreaElement.innerHTML += '<div class="sender"><div class="username">'+myEmail+'</div><div class="message">'+message.content+'</div><label class="time">'+new Date(message.created_at)+'</label></div>';
+			}
+		}
+
+		function renderNewDeveloper(email, developerId, chatId) {
+			var developersElement = document.getElementById("developers");
+			if(!messages[email]){
+				var div1 = document.createElement('div');
+				var div2 = document.createElement('div');
+				var link = document.createElement('a');
+				
+				div1.className = "element";
+				div2.className = "email";
+		        link.id = email;
+		        link.innerHTML = email;
+		        link.href = '#';
+		        link.developerId = developerId;
+
+		        div1.appendChild(div2);
+		        div2.appendChild(link);
+		        developersElement.appendChild(div1);
+			}
+			document.getElementById(email).addEventListener("click",function(){
+				var chatBodyElement = document.getElementById("chat-body"); 
+				var developersElement = document.getElementById("developers"); 
+
+				var status = chatBodyElement.style.display;
+				chatBodyElement.style.display = 'block';
+				developersElement.style.display = 'none';
+				selectedEmail = email;
+				selectedDeveloperId = developerId;
+				ajaxCall({
+					url: 'http://localhost:3000/chat/'+chatId+'/messages',
+					method: 'GET',
+					sucess: function(responseText){
+						var response = JSON.parse(responseText);
+						var responseMessages = response.result;
+						messages[email] = [];
+						for(var i = 0 ; i < responseMessages.length; i ++ ){
+							messages[email].push(responseMessages[i]);
+						}
+						renderMessages(email);
+					},
+					fail: function(){
+						console.log("error");
+					}
+				});
+			});
+		}
+
+		function initializeUi() {
+			document.getElementById("chat_button").addEventListener("click", function(){
+				var element = document.getElementById("container"); 
+				var status = element.style.display;
+				console.log(status);
+				if(status === 'block'){
+					element.style.display = 'none'
+				}else {
+					element.style.display = 'block';
+				}
+			});
+
+			var developers = document.getElementsByClassName("email");
+
+			for(var i = 0 ; i < developers.length ; i ++ ){
+				developers[i].addEventListener("click", function(){
+					var chatBodyElement = document.getElementById("chat-body"); 
+					var developersElement = document.getElementById("developers"); 
+
+					var status = chatBodyElement.style.display;
+					chatBodyElement.style.display = 'block';
+					developersElement.style.display = 'none';
+				});
+			}
+
+			document.getElementById("back").addEventListener("click", function(){
+				var chatBodyElement = document.getElementById("chat-body"); 
+				var developersElement = document.getElementById("developers"); 
+
+				var status = chatBodyElement.style.display;
+				chatBodyElement.style.display = 'none';
+				developersElement.style.display = 'block';
+				selectedEmail = null;
+			});
+
+			document.getElementById("send").addEventListener("click", function(){
+				var messagContent = document.getElementById("message").value;
+				document.getElementById("message").value = '';
+
+				ajaxCall({
+					url: 'http://localhost:3000/chat/'+appId+'/message?from='+myId+'&to='+selectedDeveloperId+'&content='+ messagContent+'&isClient=true',
+					method: 'POST',
+					sucess: function(responseText){
+						
+					},
+					fail: function(){
+						alert("error in sending the last message");
+					}
+				});
+			});
+
+		}
+		initializeUi();		
+		
+	  };
+		
+
+	</script>
+</head>
+<body>
+	<button id="chat_button">Chat</button>
+	<div id="container">
+		<h2 class="center">Chat with developers <a href="#" id="back">back</a></h2>
+		<hr style="width:80%">
+		<div id="developers">
+			<!-- <div class="element">
+				<div class="email"><a href="#">mohamedwaleed2012@gmail.com</a></div>
+			</div>
+			 -->
+
+		</div>
+		<div id="chat-body">
+			<div id="chat-area">
+				
+				<!-- <div class="receiver">
+					<div class="username">mohamed@gmail.com</div>
+					<div class="message">HiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHiHi</div>
+					<label class="time">3:00 AM</label>
+				</div> -->
+			
+			</div>
+			<div class="message-area">
+				<textarea id="message" class="textarea-control"></textarea>
+				<button id="send" class="send">Send</button>
+			</div>
+					
+		</div>
+	</div>
+</body>
+</html>

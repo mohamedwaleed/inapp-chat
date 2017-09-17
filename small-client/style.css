@@ -1,0 +1,141 @@
+#container{
+	margin: auto;
+	height: 500px;
+	width: 500px;
+	border: 1px solid #000;
+	border-radius: 10px;
+	box-shadow: 10px 10px 5px #888888;
+	z-index: 100;
+	/*display: none;*/
+}
+
+.center{
+	text-align: center;
+}
+
+#developers{
+	overflow: auto;
+	height: 400px;
+}
+#chat-body{
+	overflow: auto;
+	height: 400px;
+	display: none;
+}
+.element{
+
+	width: 80%;
+	border: 1px solid #000;
+	height: 50px;
+	margin: auto;
+	margin-top: 5px;
+	margin-bottom: 5px; 
+}
+
+#chat_button{
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+   	width: 50px;
+   	height: 50px;
+   	border-radius: 10px;
+   	background-color: #fff;
+   	font-size: 15px;
+   	border: 1px solid #000;
+   	cursor: pointer;
+}
+
+.email{
+	text-align: center;
+	font-size: 22px;
+	margin: auto;
+	margin-top: 7px;
+}
+
+
+.message-area{
+	margin: auto;
+	/*margin-top: 280px;*/
+	width: 400px;
+	height: 80px;
+
+}
+
+.textarea-control{
+	/*width: 80%
+	height: 10%;*/
+	width: 390px;
+	height: 80px;
+	border: 3px solid #cccccc;
+	padding: 5px;
+	font-family: Tahoma, sans-serif;
+}
+
+#chat-area{
+	border: 1px solid #000;
+	height: 250px;
+	width: 400px;
+	margin: auto;
+	margin-bottom: 10px;
+	border-radius: 5px;
+	overflow: auto;
+}
+
+.send{
+	width: 50px;
+   	height: 30px;
+   	border-radius: 10px;
+   	background-color: #1e6ba5;
+   	font-size: 15px;
+   	/*border: 1px solid #000;*/
+   	cursor: pointer;
+   	margin: auto;
+   	float: right;
+   	color: #fff;
+}
+
+.sender{
+	float: right;
+	width: 300px;
+	min-height: 35px;
+	background-color: #c5c5c5;
+	border-radius: 10px;
+	margin-right: 10px;
+	margin-top: 10px;
+	padding-bottom: 5px;
+	text-align: left;
+	word-wrap: break-word;
+	margin-bottom: 10px;
+}
+
+.receiver{
+	float: left;
+	width: 300px;
+	min-height: 35px;
+	background-color: #c5c5c5;
+	border-radius: 10px;
+	margin-left: 10px;
+	margin-top: 10px;
+	padding-bottom: 5px;
+	text-align: left;
+	word-wrap: break-word;
+	margin-bottom: 10px;
+}
+
+.message{
+	margin-top: 5px; 
+	margin-left: 5px;
+}
+
+.time{
+	float: right;
+	padding: 5px;
+	font-size: 12px;
+}
+
+.username{
+	float: left;
+	padding: 5px;
+	margin-right: 400px;
+	font-size: 12px;
+}
