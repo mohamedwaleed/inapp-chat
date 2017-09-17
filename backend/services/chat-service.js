@@ -161,9 +161,13 @@ class ChatService {
         var messages = [];
 
         if(offset >= 0 && limit > 0){
-            messages = await db.message.findAll({where:{chat_id: chatId},include:[{model: db.attachment, nested: true}],offset:offset,limit:limit});
+            messages = await db.message.findAll({where:{chat_id: chatId},include:[{model: db.attachment, nested: true}],offset:offset,limit:limit,order: [
+            ['created_at', 'ASC']
+        ]});
         }else {
-            messages = await db.message.findAll({where:{chat_id: chatId},include:[{model: db.attachment, nested: true}]});
+            messages = await db.message.findAll({where:{chat_id: chatId},include:[{model: db.attachment, nested: true}],order: [
+            ['created_at', 'ASC']
+        ]});
         }
         return messages;
     }
