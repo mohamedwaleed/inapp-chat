@@ -1,5 +1,6 @@
 var db = require('../models');
 var tokenUtil = require('../helpers/token-utility');
+var elasticSearch = require('../services/elasticsearch-service');
 var fs = require('fs');
 
 class ChatService {
@@ -40,7 +41,6 @@ class ChatService {
     async sendMessage(message, socketIo) {
 
         try{
-            //@TODO insert messages in elastic search
 
             var fromId = message.fromId;
             var toId = message.toId;
@@ -111,6 +111,7 @@ class ChatService {
             message.chat_id = chat.id;
             message.attachment_id = savedAttachment.id;
 
+            elasticSearch.addDocument(message);
             socketIo.to(appId).emit(to + toId, message);
         }catch(ex) {
             throw ex;

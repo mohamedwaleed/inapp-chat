@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var db = require('../models');
 var chatService = require('../services/chat-service');
-
+var elasticSearch = require('../services/elasticsearch-service');
 // send message
 router.post('/:appId/message', async (req, res, next)=>{
   try{
@@ -57,6 +57,8 @@ router.get('/:chatId/messages', async (req, res, next)=> {
       var limit = req.query.limit;
 
       var messages = await chatService.getChatMessages(chatId, parseInt(offset), parseInt(limit));
+
+
       res.send({success: true, result: messages});
  }catch(ex) {
       res.status(500).send({success: false, msg: ex.message});
@@ -70,7 +72,11 @@ router.get('/:chatId/search', async (req, res, next)=> {
       var chatId = req.params.chatId;
       var term = req.query.term;
       // use elastic search
-      res.send({success: true, result: null});
+      var result = await elasticSearch.searchDocument({chat_id: chatId, content: term});
+      var resultMessages = result.hits.hits.map((res)=>{
+        return res._source.suggest.payload;
+      });
+      res.send({success: true, result: resultMessages});
  }catch(ex) {
       res.status(500).send({success: false, msg: ex.message});
  }
