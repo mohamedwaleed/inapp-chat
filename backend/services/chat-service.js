@@ -111,7 +111,7 @@ class ChatService {
             message.chat_id = chat.id;
             message.attachment_id = savedAttachment.id;
 
-            elasticSearch.addDocument(message);
+            elasticSearch.addDocument(createdMessage);
             socketIo.to(appId).emit(to + toId, message);
         }catch(ex) {
             throw ex;
@@ -145,12 +145,10 @@ class ChatService {
 
         var chats = [];
         if(isClient){
-            chats = await db.chat.findAll({where: {user_id: userId},include: [ { model: db.developer, nested: true } ]},);
-
+            chats = await db.chat.findAll({where: {user_id: userId},include: [ { model: db.developer, nested: true } ]});
         }else {
             chats = await db.chat.findAll({where: {developer_id: userId}, include: [ { model: db.user, nested: true } ]});
         }
-
         return chats;
     }
 
