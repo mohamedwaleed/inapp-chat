@@ -13,7 +13,7 @@ var inAppChat = (function inAppChat(argument) {
 		  socket.on('user_id', function (userId) {
 		  	  myId = userId;
 		  	  userIdCallback(userId);
-		  	  socket.on(myId, function (message) {
+		  	  socket.on('client' + myId, function (message) {
 			  	messageCallback(message);
 			  });
 		  });

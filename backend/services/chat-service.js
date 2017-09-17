@@ -57,6 +57,7 @@ class ChatService {
 
 
             var chat = null;
+            var to = 'client';
             if(isClient){
                 // now from is a client and to is a developer
                 var user1 = await db.user.findOne({where:{id: fromId}});
@@ -74,6 +75,7 @@ class ChatService {
                 if(!chat){
                     chat = await db.chat.create({user_id:fromId, developer_id: toId});
                 }
+                to = 'developer';
             }else {
                 // now from is a developer and to is a client
                 var user1 = await db.user.findOne({where:{id: toId}});
@@ -91,6 +93,7 @@ class ChatService {
                 if(!chat){
                     chat = await db.chat.create({user_id:toId, developer_id: fromId});
                 }
+                to = 'client';
             }
 
 
@@ -108,7 +111,7 @@ class ChatService {
             message.chat_id = chat.id;
             message.attachment_id = savedAttachment.id;
 
-            socketIo.to(appId).emit(toId, message);
+            socketIo.to(appId).emit(to + toId, message);
         }catch(ex) {
             throw ex;
         }
