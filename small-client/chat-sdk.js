@@ -207,12 +207,12 @@ var InAppChat = (function inAppChat(io) {
 	};
 
 	module.messageCallback = function (message) {
-	  		if(message.fromEmail === selectedEmail){
-	  			module.renderNewMessage(message.fromEmail, message);
+	  		if(message.fromId === selectedDeveloperId){
+	  			module.renderNewMessage(message.senderEmail, message);
 	  			module.scrollDown('chat-area');
 	  		}
 
-	  		module.renderNewDeveloper(message.fromEmail, message.fromId,  message.chat_id);
+	  		module.renderNewDeveloper(message.senderEmail, message.fromId,  message.chat_id);
 
 	}
 

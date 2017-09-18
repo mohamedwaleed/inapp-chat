@@ -6,8 +6,8 @@ var fs = require('fs');
 class ChatService {
 
     /////////////////////// handles new Connections
-    receiveConnections(io, callback) {
-        io.on('connection', callback);
+    receiveConnections(socketIo, callback) {
+        socketIo.on('connection', callback);
     }
 
 
@@ -42,8 +42,8 @@ class ChatService {
 
         try{
 
-            var fromId = message.fromId;
-            var toId = message.toId;
+            var fromId = parseInt(message.fromId);
+            var toId = parseInt(message.toId);
             var appId = message.appId;
             var content = message.content;
             var attachment = message.attachment;
@@ -55,51 +55,14 @@ class ChatService {
                 throw new Error(`App id ${appId} is not exist`);
             }
 
-
-            var chat = null;
-            var to = 'client';
-            if(isClient){
-                // now from is a client and to is a developer
-                var user1 = await db.user.findOne({where:{id: fromId}});
-
-                var user2 = await db.developer.findOne({where:{id: toId }});
-
-                if(!user1){
-                    throw new Error(`client id ${fromId} is not exist`);
-                }
-                if(!user2){
-                    throw new Error(`developer id ${toId} is not exist`);
-                }
-                message.fromEmail = user1.email;
-                chat = await db.chat.findOne({where:{$and:[{user_id: fromId},{developer_id: toId}]}});
-                if(!chat){
-                    chat = await db.chat.create({user_id:fromId, developer_id: toId});
-                }
-                to = 'developer';
-            }else {
-                // now from is a developer and to is a client
-                var user1 = await db.user.findOne({where:{id: toId}});
-
-                var user2 = await db.developer.findOne({where:{id: fromId }});
-
-                if(!user1){
-                    throw new Error(`client id ${toId} is not exist`);
-                }
-                if(!user2){
-                    throw new Error(`developer id ${fromId} is not exist`);
-                }
-                message.fromEmail = user2.email;
-                chat = await db.chat.findOne({where:{$and:[{user_id: toId},{developer_id: fromId}]}});
-                if(!chat){
-                    chat = await db.chat.create({user_id:toId, developer_id: fromId});
-                }
-                to = 'client';
-            }
-
+            var createdChat = await this.createChatInstanceIfNotExist(fromId, toId, isClient);
+            var to = createdChat.to;
+            var senderEmail = createdChat.senderEmail;
+            var chat = createdChat.chat;
 
             var savedAttachment = {};
             if(attachment){
-                        // there is an attachment
+                // there is an attachment
                 var attachmentGeneratedName = await this.uploadMessageAttachment(attachment);
 
                 savedAttachment = await db.attachment.create({file_path: attachmentGeneratedName});
@@ -107,15 +70,62 @@ class ChatService {
 
             var createdMessage = await db.message.create({content: content, chat_id: chat.id, is_client: isClient, attachment_id: savedAttachment.id });
 
-            message.created_at = createdMessage.created_at;
-            message.chat_id = chat.id;
-            message.attachment_id = savedAttachment.id;
+            var messageDto = {
+               id: createdMessage.id,
+               content: createdMessage.content,
+               chat_id: createdMessage.chat_id,
+               is_client: isClient,
+               created_at: createdMessage.created_at,
+               updated_at: createdMessage.updated_at,
+               fromId: fromId,
+               toId: toId,
+               senderEmail: senderEmail
+            };
+            elasticSearch.addDocument(messageDto);
+            socketIo.to(appId).emit(to + toId, messageDto);
 
-            elasticSearch.addDocument(createdMessage);
-            socketIo.to(appId).emit(to + toId, message);
+            return createdMessage;
         }catch(ex) {
             throw ex;
         }
+    }
+
+    async createChatInstanceIfNotExist(_fromId, _toId, isClient) {
+      var to = '';
+      var senderEmail = '';
+      var fromId = _fromId;
+      var toId = _toId;
+      if(!isClient){
+        // swap fromId and toId in case of developer is the sender
+        var tmpFromId = fromId;
+        toId = fromId;
+        fromId = tmpFromId;
+      }
+      var clientUser = await db.user.findOne({where:{id: fromId}});
+
+      var developerUser = await db.developer.findOne({where:{id: toId }});
+
+      if(!clientUser){
+          throw new Error(`client id ${fromId} is not exist`);
+      }
+      if(!developerUser){
+          throw new Error(`developer id ${toId} is not exist`);
+      }
+      // message.fromEmail = user1.email;
+      var chat = await db.chat.findOne({where:{$and:[{user_id: fromId},{developer_id: toId}]}});
+      if(!chat){
+          chat = await db.chat.create({user_id:fromId, developer_id: toId});
+      }
+
+      senderEmail = (!isClient)?developerUser.email:clientUser.email;
+      to = (!isClient)?'client':'developer';
+
+      var returnedChatInstance = {
+        chat: chat,
+        senderEmail: senderEmail,
+        to: to
+      };
+      return returnedChatInstance;
     }
 
     async uploadMessageAttachment(attachment) {
