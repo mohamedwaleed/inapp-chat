@@ -1,0 +1,211 @@
+swagger: "2.0"
+info:
+  description: "in app chat service"
+  version: "v1"
+  title: "In-app chat"
+  contact:
+    name: "Mohamed Waleed Mohamed"
+    email: "mohamedwaleed2012@gmail.com"
+  license:
+    name: "Mohamed Waleed"
+host: "localhost"
+basePath: "/"
+schemes:
+- "http"
+
+paths:
+  /chat/{appId}/message:
+    post:
+      summary: Send a message
+      description: from user to developer or from developer to user
+      parameters:
+        - in: path
+          name: appId
+          type: integer
+          required: true
+          description: application id that a chat occure
+        - in: query
+          name: from
+          type: integer
+          description: from id
+          required: true
+        - in: query
+          name: to
+          type: integer
+          description: To id
+          required: true
+        - in: query
+          name: content
+          type: string
+          description: The content that you want to send
+          required: true
+        - in: query
+          name: isClient
+          type: boolean
+          description: Specify whether the from id a user or a developer
+          required: false
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/send-message-response"
+        500:
+          description: An error occured while sending the message
+          schema:
+            $ref: "#/definitions/error-response"
+  /chat/:
+    get:
+      summary: Get all chat instances
+      description: Get all chat instances for a developer or a user
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/get-chats-response"
+        500:
+          description: An error occured while fetching chat instances
+          schema:
+            $ref: "#/definitions/error-response"
+  /chat/{chatId}/messages:
+    get:
+      summary: Get all chat message
+      description: Get all messages related to specific chat
+      parameters:
+        - in: path
+          name: chatId
+          type: integer
+          required: true
+          description: chat id
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/get-messages-response"
+        500:
+          description: An error occured while fetching chat messages
+          schema:
+            $ref: "#/definitions/error-response"
+
+  /chat/{chatId}/search:
+    get:
+      summary: Search term in chat messages
+      description: Search for a text in all messages in specific chat
+      parameters:
+        - in: path
+          name: chatId
+          type: integer
+          required: true
+          description: chat id
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/get-messages-response"
+        500:
+          description: An error occured while searching chat messages
+          schema:
+            $ref: "#/definitions/error-response"
+
+definitions:
+  send-message-response:
+    type: "object"
+    properties:
+      success:
+        type: "boolean"
+        default: true
+      result:
+        type: "object"
+  get-chats-response:
+    type: "object"
+    properties:
+      success:
+        type: "boolean"
+        default: true
+      result:
+        type: "object"
+        $ref: "#/definitions/chat"
+
+  error-response:
+    type: "object"
+    properties:
+      success:
+        type: "boolean"
+        default: false
+      msg:
+        type: "string"
+        default: "Error in sending the message"
+
+
+  get-messages-response:
+    type: "object"
+    properties:
+      success:
+        type: "boolean"
+        default: true
+      result:
+        type: "object"
+        $ref: "#/definitions/message"
+
+  search-response:
+    type: "object"
+    properties:
+      success:
+        type: "boolean"
+        default: true
+      result:
+        type: "object"
+        $ref: "#/definitions/message"
+
+  message:
+    type: "object"
+    properties:
+      id:
+        type: integer
+      content:
+        type: string
+      is_client:
+        type: boolean
+      created_at:
+        type: string
+      updated_at:
+        type: string
+      chat_id:
+        type: integer
+      attachment_id:
+        type: integer
+      attachment:
+        $ref: "#/definitions/attachment"
+
+  attachment:
+    type: "object"
+    properties:
+      id:
+        type: integer
+      file_path:
+        type: string
+
+  chat:
+    type: "object"
+    properties:
+      user_id:
+        type: integer
+      developer_id:
+        type: integer
+      user:
+        type: object
+        $ref: "#/definitions/user"
+
+  user:
+    type: "object"
+    properties:
+      id:
+        type: integer
+      first_name:
+        type: string
+      lastname:
+        type: string
+      email:
+        type: string
+      gender:
+        type: string
+
