@@ -17,7 +17,7 @@ router.post('/:appId/message', async (req, res, next)=>{
       if(req.files){
         attachment = req.files.attachment;
       }
-      await chatService.sendMessage({
+      var messageDto = await chatService.sendMessage({
         fromId: from,
         toId: to,
         content: content,
@@ -25,7 +25,7 @@ router.post('/:appId/message', async (req, res, next)=>{
         isClient: isClient,
         attachment: attachment
       },socketIo);
-      res.send({success: true});
+      res.send({success: true,result: messageDto});
   }catch(ex){
       res.status(500).send({success: false, msg: ex.message});
   }

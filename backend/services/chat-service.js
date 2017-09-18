@@ -79,12 +79,13 @@ class ChatService {
                updated_at: createdMessage.updated_at,
                fromId: fromId,
                toId: toId,
-               senderEmail: senderEmail
+               senderEmail: senderEmail,
+               attachment: savedAttachment
             };
             elasticSearch.addDocument(messageDto);
             socketIo.to(appId).emit(to + toId, messageDto);
 
-            return createdMessage;
+            return messageDto;
         }catch(ex) {
             throw ex;
         }
@@ -154,16 +155,35 @@ class ChatService {
         }
 
         var chats = [];
+        var  chatDtos = [];
         if(isClient){
             chats = await db.chat.findAll({where: {user_id: userId},include: [ { model: db.developer, nested: true } ]});
+            chatDtos = chats.map((chat) => {
+              var chatDto = {
+                id: chat.id,
+                user_id: chat.user_id,
+                developer_id: chat.developer_id,
+                to_user: chat.developer
+              };
+              return chatDto;
+            });
         }else {
             chats = await db.chat.findAll({where: {developer_id: userId}, include: [ { model: db.user, nested: true } ]});
+            chatDtos = chats.map((chat) => {
+              var chatDto = {
+                id: chat.id,
+                user_id: chat.user_id,
+                developer_id: chat.developer_id,
+                to_user: chat.user
+              };
+              return chatDto;
+            });
         }
-        return chats;
+        return chatDtos;
     }
 
     async getChatMessages(chatId, offset ,limit) {
-        var chat = await db.chat.findOne({where:{id: chatId}});
+        var chat = await db.chat.findOne({where:{id: chatId},include:[{ model: db.developer, nested: true },{ model: db.user, nested: true }]});
         if(!chat){
             throw new Error(`There is no chat with id ${chatId}`);
         }
@@ -172,13 +192,30 @@ class ChatService {
         if(offset >= 0 && limit > 0){
             messages = await db.message.findAll({where:{chat_id: chatId},include:[{model: db.attachment, nested: true}],offset:offset,limit:limit,order: [
             ['created_at', 'ASC']
-        ]});
+          ]});
         }else {
             messages = await db.message.findAll({where:{chat_id: chatId},include:[{model: db.attachment, nested: true}],order: [
             ['created_at', 'ASC']
-        ]});
+          ]});
         }
-        return messages;
+        var messageDtos = messages.map((message) => {
+          var fromId = (!message.is_client)?chat.developer_id:chat.user_id;
+          var toId = (!message.is_client)?chat.user_id:chat.developer_id;
+          var senderEmail = (!message.is_client)?chat.developer.email:chat.user.email;
+          var messageDto = {
+            id: message.id,
+            content: message.content,
+            is_client: message.is_client,
+            created_at: message.created_at,
+            updated_at: message.updated_at,
+            fromId: fromId,
+            toId: toId,
+            senderEmail: senderEmail,
+            attachment: message.attachment
+          };
+          return messageDto;
+        });
+        return messageDtos;
     }
 }
 

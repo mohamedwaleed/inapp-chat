@@ -115,6 +115,8 @@ definitions:
         default: true
       result:
         type: "object"
+        $ref: "#/definitions/message"
+
   get-chats-response:
     type: "object"
     properties:
@@ -171,8 +173,12 @@ definitions:
         type: string
       chat_id:
         type: integer
-      attachment_id:
+      fromId:
         type: integer
+      toId:
+        type: integer
+      senderEmail:
+        type: string
       attachment:
         $ref: "#/definitions/attachment"
 
@@ -187,11 +193,13 @@ definitions:
   chat:
     type: "object"
     properties:
+      id:
+        type: integer
       user_id:
         type: integer
       developer_id:
         type: integer
-      user:
+      to_user:
         type: object
         $ref: "#/definitions/user"
 
@@ -208,4 +216,3 @@ definitions:
         type: string
       gender:
         type: string
-
