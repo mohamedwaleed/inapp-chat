@@ -60,7 +60,7 @@ class ChatService {
             var senderEmail = createdChat.senderEmail;
             var chat = createdChat.chat;
 
-            var savedAttachment = {};
+            var savedAttachment = null;
             if(attachment){
                 // there is an attachment
                 var attachmentGeneratedName = await this.uploadMessageAttachment(attachment);
@@ -68,7 +68,7 @@ class ChatService {
                 savedAttachment = await db.attachment.create({file_path: attachmentGeneratedName});
             }
 
-            var createdMessage = await db.message.create({content: content, chat_id: chat.id, is_client: isClient, attachment_id: savedAttachment.id });
+            var createdMessage = await db.message.create({content: content, chat_id: chat.id, is_client: isClient, attachment_id: (savedAttachment)?savedAttachment.id:null });
 
             var messageDto = {
                id: createdMessage.id,

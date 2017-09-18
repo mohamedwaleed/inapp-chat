@@ -68,6 +68,15 @@ var InAppChat = (function inAppChat(io) {
 
 	module.renderNewMessage = function(email, message) {
 		var chatAreaElement = document.getElementById('chat-area');
+		if(message.attachment){
+			if(!message.is_client){
+				// not my message 
+				chatAreaElement.innerHTML += '<div class="receiver"><div class="username">'+email+'</div><br><br><div class="message">'+message.content+'<div><a href="'+BASE_URL+"/"+message.attachment.file_path+'">'+message.attachment.file_path+'</a></div></div><label class="time">'+new Date(message.created_at)+'</label></div>';
+			}else {
+				chatAreaElement.innerHTML += '<div class="sender"><div class="username">'+myEmail+'</div><br><br><div class="message">'+message.content+'<div><a href="'+BASE_URL+"/"+message.attachment.file_path+'">'+message.attachment.file_path+'</a></div></div><label class="time">'+new Date(message.created_at)+'</label></div>';
+			}
+			return;
+		}
 		if(!message.is_client){
 			// not my message 
 			chatAreaElement.innerHTML += '<div class="receiver"><div class="username">'+email+'</div><br><br><div class="message">'+message.content+'</div><label class="time">'+new Date(message.created_at)+'</label></div>';
@@ -225,8 +234,8 @@ var InAppChat = (function inAppChat(io) {
 				var response = JSON.parse(responseText);
 				var chats = response.result;
 				for(var i = 0 ; i < chats.length ;  i ++ ){
-					module.renderNewDeveloper(chats[i].developer.email, chats[i].developer.id , chats[i].id);
-					messages[chats[i].developer.email] = [];
+					module.renderNewDeveloper(chats[i].to_user.email, chats[i].to_user.id , chats[i].id);
+					messages[chats[i].to_user.email] = [];
 				}
 			},
 			fail: function(){
