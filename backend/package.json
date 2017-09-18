@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "sequelize db:migrate && node ./bin/www",
-    "initData": "sequelize db:migrate && sequelize db:seed:all"
+    "initData": "sequelize db:migrate && sequelize db:seed:all",
+    "test": "mocha --recursive ./tests"
   },
   "dependencies": {
     "body-parser": "~1.17.1",
@@ -25,5 +26,10 @@
     "swagger-tools": "^0.10.1",
     "swagger-ui": "^3.2.1",
     "yamljs": "^0.3.0"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "chai-http": "^3.0.0",
+    "mocha": "^3.5.3"
   }
 }
