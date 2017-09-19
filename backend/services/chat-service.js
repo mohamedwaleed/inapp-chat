@@ -147,9 +147,8 @@ class ChatService {
         }
     }
 
-    async getChatInstances(query) {
-        var userId = query.userId;
-        var isClient = query.isClient;
+    async getChatInstances(userId, isClient) {
+
         if(!userId){
             throw new Error('User id is missing');
         }

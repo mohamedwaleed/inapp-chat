@@ -1,10 +1,10 @@
 'use strict';
 
 class TokenUtil {
-    generateToken(tokenLength) {
+    generateToken(tokenLength=10) {
         const chars = "abcdefghijklmnopqrstuvwxyz123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         var token = "";
-        for(var i = 0 ; i < 10 ; i ++){
+        for(var i = 0 ; i < tokenLength ; i ++){
             var index = (Math.floor(Math.random() * 100) % chars.length);
             token += chars[index];
         }

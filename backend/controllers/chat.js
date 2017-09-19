@@ -39,10 +39,7 @@ router.get('/', async (req, res, next)=> {
       var userId = req.query.userId;
       var isClient = req.query.isClient;
 
-      var chats = await chatService.getChatInstances({
-        userId: userId,
-        isClient: isClient
-      });
+      var chats = await chatService.getChatInstances(userId, isClient);
       res.send({success: true, result: chats});
  }catch(ex) {
       console.log(ex);
