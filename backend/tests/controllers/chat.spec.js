@@ -357,7 +357,7 @@ it('should not send message from developer to client exception occurs /chat/:app
     };
    var expected = {
       success: false,
-      msg: ""
+      msg: `client id ${developerId} is not exist`
    };
 
     var url = `/chat/${appId}/message?from=${developerId}&to=${userId}&content=${content}`;
@@ -369,7 +369,7 @@ it('should not send message from developer to client exception occurs /chat/:app
 
         expect(res.body.success).to.equal(expected.success);
         console.log(res.body.msg);
-        expect(res.body.msg).to.equal("client id "+developerId+" is not exist");
+        expect(res.body.msg).to.equal(expected.msg);
         done();
       });
   });
