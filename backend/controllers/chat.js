@@ -45,7 +45,7 @@ router.get('/', async (req, res, next)=> {
       });
       res.send({success: true, result: chats});
  }catch(ex) {
- console.log(ex);
+      console.log(ex);
       res.status(500).send({success: false, msg: ex.message});
  }
 });
@@ -63,6 +63,7 @@ router.get('/:chatId/messages', async (req, res, next)=> {
 
       res.send({success: true, result: messages});
  }catch(ex) {
+      console.log(ex);
       res.status(500).send({success: false, msg: ex.message});
  }
 });
@@ -75,8 +76,9 @@ router.get('/:chatId/search', async (req, res, next)=> {
       var term = req.query.term;
       // use elastic search
       var result = await elasticSearch.searchDocument({chat_id: chatId, content: term});
+
       var resultMessages = result.hits.hits.map((res)=>{
-        return res._source.suggest.payload;
+        return res._source.suggest.payload.message;
       });
       res.send({success: true, result: resultMessages});
  }catch(ex) {

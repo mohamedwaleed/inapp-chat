@@ -1,14 +1,28 @@
 var elasticsearch = require('elasticsearch');
+var env       = process.env.NODE_ENV || 'development';
+var config    = require(__dirname + '/../config/config.json')[env];
 
 class ElasticsearchService {
 
     constructor() {
+
+      if(config.elastic_seacrh_url){
+        this.elasticClient = new elasticsearch.Client({
+            host: process.env[config.elastic_seacrh_url],
+            log: 'info'
+        });
+        this.indexName = process.env[config.elastic_seacrh_index] || config.elastic_seacrh_index ||  "chatindex";
+
+      }else {
         this.elasticClient = new elasticsearch.Client({
             host: 'localhost:9200',
             log: 'info'
         });
-
         this.indexName = "chatindex";
+      }
+
+
+
 
         this.indexExists().then((exists) => {
           if (!exists) {
@@ -99,8 +113,3 @@ function elasticsearchServiceFactory() {
 }
 
 module.exports = elasticsearchServiceFactory();
-
-
-
-
-

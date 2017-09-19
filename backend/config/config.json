@@ -4,7 +4,9 @@
     "password": "root",
     "database": "instabug_chat",
     "host": "127.0.0.1",
-    "dialect": "mysql"
+    "dialect": "mysql",
+    "elastic_seacrh_url": "localhost:9200",
+    "elastic_seacrh_index": "chatindex"
   },
   "test": {
     "username": "root",
@@ -12,9 +14,13 @@
     "database": "instabug_chat",
     "host": "127.0.0.1",
     "dialect": "sqlite",
-    "storage": ":memory:"
+    "storage": ":memory:",
+    "elastic_seacrh_url": "localhost:9200",
+    "elastic_seacrh_index": "test"
   },
   "production": {
-    "use_env_variable": "DATABASE_CONNECTION_URL"
+    "use_env_variable": "DATABASE_CONNECTION_URL",
+    "elastic_seacrh_url": "ELASTIC_SEARCH_URL",
+    "elastic_seacrh_index": "ELASTIC_SEARCH_INDEX"
   }
 }
