@@ -82,6 +82,7 @@ router.get('/:chatId/search', async (req, res, next)=> {
       });
       res.send({success: true, result: resultMessages});
  }catch(ex) {
+   console.log(ex);
       res.status(500).send({success: false, msg: ex.message});
  }
 });

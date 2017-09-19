@@ -12,8 +12,8 @@ class ChatService {
 
 
     /////////////////////// handles disconnections
-    receiveDisconnections(socket, callback) {
-        socket.on('disconnect', callback);
+    receiveDisconnections(socketIo, callback) {
+        socketIo.on('disconnect', callback);
     }
 
 

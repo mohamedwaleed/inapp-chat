@@ -7,7 +7,6 @@ var sinon = require('sinon');
 const db = require('../../models');
 var should = chai.should();
 var expect = chai.expect
-var chatService = require('../../services/chat-service');
 var elasticSearch = require('../../services/elasticsearch-service');
 
 chai.use(chaiHttp);
@@ -216,18 +215,36 @@ describe("Chat controller", function(){
     });
 
     beforeEach(function(done) {
+      // var elasticSearchIndexPromise = elasticSearch.elasticClient.indices.exists({
+      //       index: elasticSearch.indexName
+      //   }).then((exists)=>{
+      //     if(exists){
+      //       console.log("--------------------------------------check");
+      //       return elasticSearch.elasticClient.indices.delete({
+      //           index: elasticSearch.indexName
+      //       });
+      //     }
+      //   }).then(()=>{
+      //     console.log("--------------------------------------creating");
+      //     return elasticSearch.elasticClient.indices.create({
+      //        index: elasticSearch.indexName
+      //    });
+      //  }).then(elasticSearch.elasticClient.initMapping).catch(function (err) {
+      //     console.log(err);
+      //   });
+
         // runs before each test in this block
-        var elasticSearchIndexPromise = elasticSearch.elasticClient.indices.delete({
-            index: elasticSearch.indexName
-        }).then(()=>{
-           return elasticSearch.elasticClient.indices.create({
-              index: elasticSearch.indexName
-          });
-        }).catch(()=>{
-          return elasticSearch.elasticClient.indices.create({
-             index: elasticSearch.indexName
-         });
-        });
+        // var elasticSearchIndexPromise = elasticSearch.elasticClient.indices.delete({
+        //     index: elasticSearch.indexName
+        // }).then(()=>{
+        //    return elasticSearch.elasticClient.indices.create({
+        //       index: elasticSearch.indexName
+        //   });
+        // }).catch(()=>{
+        //   return elasticSearch.elasticClient.indices.create({
+        //      index: elasticSearch.indexName
+        //  });
+        // });
 
         var companyPromise =  db.sequelize.query("delete from company");
         var applicationPromise =  db.sequelize.query("delete from application");
@@ -235,7 +252,7 @@ describe("Chat controller", function(){
         var userPromise =  db.sequelize.query("delete from user");
         var messagePromise =  db.sequelize.query("delete from message");
         var attachmentPromise =  db.sequelize.query("delete from attachment");
-        Promise.all([elasticSearchIndexPromise,companyPromise,applicationPromise,developerPromise,userPromise,messagePromise,attachmentPromise]).then(()=>
+        Promise.all([companyPromise,applicationPromise,developerPromise,userPromise,messagePromise,attachmentPromise]).then(()=>
         {
           done();
         });
@@ -549,29 +566,43 @@ describe("Chat controller", function(){
 
     });
     it('should search for term in chat messages /chat/1/search?term=hi GET', function(done) {
-      var content = "hi there";
-      elasticSearch.elasticClient.index({
-          index: elasticSearch.indexName,
-          type: "document",
-          body: {
-              chat_id: 1,
-              content: content,
-              suggest: {
-                  input: content.split(" "),
-                  output: content,
-                  payload:  {message: {
-                    id: 1,
-                    content: content,
-                    is_client: true,
-                    fromId: 1,
-                    toId: 1,
-                    senderEmail: "mohamed@gmail.com",
-                    attachment: null
-                  }}
-              }
-          }
-      }).then((res)=>{
-        
+        var messageDto = {
+          id: 1,
+          content: content,
+          is_client: true,
+          fromId: 1,
+          toId: 1,
+          senderEmail: "mohamed@gmail.com",
+          attachment: null
+        };
+        var expected = {
+          success: true,
+          result: [messageDto]
+        };
+        var content = "hi";
+        var searchDoumentStub = sinon.stub(elasticSearch,"searchDocument").callsFake((data)=>{
+          return {
+            hits:{
+              hits:[{
+                _source:{
+                  suggest:{
+                      payload: {
+                        message:{
+                          id: 1,
+                          content: data.content,
+                          is_client: true,
+                          fromId: 1,
+                          toId: 1,
+                          senderEmail: "mohamed@gmail.com",
+                          attachment: null
+                      }
+                    }
+                  }
+                }
+              }]
+            }
+            };
+        });
         var messageDto = {
           id: 1,
           content: content,
@@ -594,14 +625,12 @@ describe("Chat controller", function(){
           .get(url)
           .end(function(err, res){
             res.should.have.status(200);
-            console.log(res.body);
             expect(res.body.result.length).to.equal(expectedSize);
             expect(res.body.result[0].id).to.equal(1);
-            xpect(res.body.result[0].content).to.equal("hi there");
+            expect(res.body.result[0].content).to.equal("hi");
             expect(res.body.success).to.equal(expected.success);
+            searchDoumentStub.restore();
             done();
           });
       });
-
-    });
 });
