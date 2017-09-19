@@ -27,6 +27,7 @@ router.post('/:appId/message', async (req, res, next)=>{
       },socketIo);
       res.send({success: true,result: messageDto});
   }catch(ex){
+    // console.log(ex);
       res.status(500).send({success: false, msg: ex.message});
   }
 

@@ -11,13 +11,10 @@
     "password": "root",
     "database": "instabug_chat",
     "host": "127.0.0.1",
-    "dialect": "sqlite"
+    "dialect": "sqlite",
+    "storage": ":memory:"
   },
   "production": {
-    "username": "root",
-    "password": null,
-    "database": "database_production",
-    "host": "127.0.0.1",
-    "dialect": "mysql"
+    "use_env_variable": "DATABASE_CONNECTION_URL"
   }
 }
