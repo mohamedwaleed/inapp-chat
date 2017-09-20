@@ -1,0 +1,36 @@
+version: '2'
+services:
+  chat:
+    build: .
+    environment:
+      DATABASE_CONNECTION_URL: mysql://root:root@mysqldb:3306/chat
+      ELASTIC_SEARCH_URL: esearch:9200
+      MYSQL_HOST: mysqldb
+      NODE_ENV: production
+      ELASTIC_SEARCH_INDEX: chatindex
+    links:
+      - mysqldb:mysqldb
+      - esearch:esearch
+    depends_on:
+      - mysqldb
+      - esearch
+    ports:
+      - "3000:3000"
+
+  mysqldb:
+    image: mysql
+    environment:
+      MYSQL_DATABASE: chat
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306"
+
+  esearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.6.1
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+
+

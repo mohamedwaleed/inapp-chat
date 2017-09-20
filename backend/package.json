@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "sequelize db:migrate && node ./bin/www",
+    "start": "node ./bin/www",
     "initData": "sequelize db:migrate && sequelize db:seed:all",
     "test": "mocha --recursive ./tests"
   },

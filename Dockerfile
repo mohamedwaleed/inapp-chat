@@ -2,8 +2,12 @@ FROM node
 ENV DATABASE_CONNECTION_URL ""
 ENV ELASTIC_SEARCH_URL ""
 ENV ELASTIC_SEARCH_INDEX ""
-COPY backend /home
+ENV NODE_ENV "production"
+RUN mkdir /home/backend
+COPY backend /home/backend
+COPY start.sh /home
 WORKDIR /home/backend
-RUN npm install
-RUN node_modules/.bin/sequelize db:seed:all
-CMD ["npm","start"]
+RUN chmod 777 -R /home/backend
+RUN chmod 777  /home/start.sh
+EXPOSE 3000
+ENTRYPOINT ["/home/start.sh"]
