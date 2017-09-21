@@ -28,6 +28,8 @@ class ElasticsearchService {
           if (!exists) {
             this.initIndex().then(this.initMapping);
           }
+        }).catch((err)=>{
+          console.log(err);
         });
 
     }
