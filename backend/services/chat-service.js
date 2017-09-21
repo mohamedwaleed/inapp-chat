@@ -30,7 +30,7 @@ class ChatService {
             var appId = message.appId;
             var content = message.content;
             var attachment = message.attachment;
-            var isClient = message.isClient;
+            var isClient = (message.isClient === 'true')?true:false;
 
             var app = await db.application.findOne({where: {id: appId}});
 
@@ -79,7 +79,7 @@ class ChatService {
       var senderEmail = '';
       var fromId = _fromId;
       var toId = _toId;
-      if(!isClient){
+      if(isClient === false){
         // swap fromId and toId in case of developer is the sender
         var tmpFromId = fromId;
         toId = fromId;
@@ -102,7 +102,7 @@ class ChatService {
       }
 
       senderEmail = (!isClient)?developerUser.email:clientUser.email;
-      to = (!isClient)?'client':'developer';
+      to = (isClient === false)?'client':'developer';
 
       var returnedChatInstance = {
         chat: chat,
@@ -131,14 +131,14 @@ class ChatService {
     }
 
     async getChatInstances(userId, isClient) {
-
+        userId = parseInt(userId);
         if(!userId){
             throw new Error('User id is missing');
         }
-
+        isClient = (isClient === 'true')?true:false;
         var chats = [];
         var  chatDtos = [];
-        if(isClient){
+        if(isClient === true){
             chats = await db.chat.findAll({where: {user_id: userId},include: [ { model: db.developer, nested: true } ]});
             chatDtos = chats.map((chat) => {
               var chatDto = {

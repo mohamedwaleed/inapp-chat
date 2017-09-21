@@ -451,7 +451,73 @@ describe("Chat controller", function(){
       Promise.all([companyPromise,applicationPromise,developerPromise,userPromise,chatPromise])
       .then(() => {
         var developerId = 1;
-        var isClient = false;
+        var isClient = 'false';
+        var chatDto = {
+            id: 1,
+            user_id: 1,
+            developer_id: developerId,
+            to_user: {id:1,first_name:"mohamed",last_name:"mohamed",email:"ali@gmail.com",gender:"male",is_online:true,age:30,application_id:1}
+        };
+        var expected = {
+          success: true,
+          result: [chatDto]
+        };
+
+        var url = `/chat?userId=${developerId}&isClient=${isClient}`;
+        db
+        chai.request(server)
+          .get(url)
+          .end(function(err, res){
+            res.should.have.status(200);
+            res.body.should.be.eql(expected);
+            expect(res.body.success).to.equal(expected.success);
+            done();
+          });
+      });
+
+    });
+
+    it('should list ALL chat instances for a user on /chat GET', function(done) {
+
+      var companyPromise  =  db.company.create({
+        id: 1,
+        name: "app"
+      });
+
+      var applicationPromise =  db.application.create({
+        id: 1,
+        name: "app",
+        company_id: 1
+      });
+      var developerPromise =  db.developer.create({
+        id: 1,
+        first_name: "mohamed",
+        last_name: "mohamed",
+        email: "mohamed@gmail.com",
+        gender: "male",
+        company_id: 1
+      });
+      var userPromise =  db.user.create({
+        id: 1,
+        first_name: "mohamed",
+        last_name: "mohamed",
+        email: "ali@gmail.com",
+        gender: "male",
+        age: 30,
+        is_online: true,
+        application_id: 1
+      });
+      var chatPromise =  db.chat.create({
+        id: 1,
+        user_id: 1,
+        developer_id: 1,
+        application_id: 1
+      });
+
+      Promise.all([companyPromise,applicationPromise,developerPromise,userPromise,chatPromise])
+      .then(() => {
+        var developerId = 1;
+        var isClient = 'true';
         var chatDto = {
             id: 1,
             user_id: 1,
@@ -470,6 +536,71 @@ describe("Chat controller", function(){
           .end(function(err, res){
             res.should.have.status(200);
             res.body.should.be.eql(expected);
+            expect(res.body.success).to.equal(expected.success);
+            done();
+          });
+      });
+
+    });
+
+    it('should not get chat instances in case of no id on /chat GET', function(done) {
+
+      var companyPromise  =  db.company.create({
+        id: 1,
+        name: "app"
+      });
+
+      var applicationPromise =  db.application.create({
+        id: 1,
+        name: "app",
+        company_id: 1
+      });
+      var developerPromise =  db.developer.create({
+        id: 1,
+        first_name: "mohamed",
+        last_name: "mohamed",
+        email: "mohamed@gmail.com",
+        gender: "male",
+        company_id: 1
+      });
+      var userPromise =  db.user.create({
+        id: 1,
+        first_name: "mohamed",
+        last_name: "mohamed",
+        email: "ali@gmail.com",
+        gender: "male",
+        age: 30,
+        is_online: true,
+        application_id: 1
+      });
+      var chatPromise =  db.chat.create({
+        id: 1,
+        user_id: 1,
+        developer_id: 1,
+        application_id: 1
+      });
+
+      Promise.all([companyPromise,applicationPromise,developerPromise,userPromise,chatPromise])
+      .then(() => {
+        var developerId = null;
+        var isClient = 'true';
+        var chatDto = {
+            id: 1,
+            user_id: 1,
+            developer_id: developerId,
+            to_user: {id:1,first_name:"mohamed",last_name:"mohamed",email:"mohamed@gmail.com",gender:"male",company_id:1}
+        };
+        var expected = {
+          success: false,
+          msg: 'User id is missing'
+        };
+
+        var url = `/chat?userId=${developerId}&isClient=${isClient}`;
+        db
+        chai.request(server)
+          .get(url)
+          .end(function(err, res){
+            res.should.have.status(500);
             expect(res.body.success).to.equal(expected.success);
             done();
           });
@@ -567,6 +698,192 @@ describe("Chat controller", function(){
       });
 
     });
+
+    it('should list all chat messages paginated on /chat/1/messages?offset=0&limit=1 GET', function(done) {
+
+      var companyPromise  =  db.company.create({
+        id: 1,
+        name: "app"
+      });
+
+      var applicationPromise =  db.application.create({
+        id: 1,
+        name: "app",
+        company_id: 1
+      });
+      var developerPromise =  db.developer.create({
+        id: 1,
+        first_name: "mohamed",
+        last_name: "mohamed",
+        email: "mohamed@gmail.com",
+        gender: "male",
+        company_id: 1
+      });
+      var userPromise =  db.user.create({
+        id: 1,
+        first_name: "mohamed",
+        last_name: "mohamed",
+        email: "ali@gmail.com",
+        gender: "male",
+        age: 30,
+        is_online: true,
+        application_id: 1
+      });
+      var chatPromise =  db.chat.create({
+        id: 1,
+        user_id: 1,
+        developer_id: 1,
+        application_id: 1
+      });
+      var message1Promise =  db.message.create({
+        id: 1,
+        content: 'hi',
+        chat_id: 1,
+        is_client: false
+      });
+      var message2Promise =  db.message.create({
+        id: 2,
+        content: 'hi there',
+        chat_id: 1,
+        is_client: true
+      });
+
+      Promise.all([companyPromise,applicationPromise,developerPromise,userPromise,chatPromise,message1Promise,message2Promise])
+      .then(() => {
+        var chatId = 1;
+        var offset = 0;
+        var limit = 1;
+        var messageDto1 = {
+          id: 1,
+          content: 'hi',
+          is_client: false,
+          fromId: 1,
+          toId: 1,
+          senderEmail: "mohamed@gmail.com",
+          attachment: null
+        };
+        var messageDto2 = {
+          id: 2,
+          content: 'hi threre',
+          is_client: true,
+          fromId: 1,
+          toId: 1,
+          senderEmail: "ali@gmail.com",
+          attachment: null
+        };
+        var expected = {
+          success: true,
+          result: [messageDto1,messageDto2]
+        };
+        var expectedSize = 1;
+        var url = `/chat/${chatId}/messages?offset=${offset}&limit=${limit}`;
+        db
+        chai.request(server)
+          .get(url)
+          .end(function(err, res){
+            res.should.have.status(200);
+            expect(res.body.result.length).to.equal(expectedSize);
+            expect(res.body.result[0].id).to.equal(1);
+            expect(res.body.success).to.equal(expected.success);
+            done();
+          });
+      });
+
+    });
+
+
+    it('should not list all chat messages if no chatId provided on /chat/1/messages GET', function(done) {
+
+      var companyPromise  =  db.company.create({
+        id: 1,
+        name: "app"
+      });
+
+      var applicationPromise =  db.application.create({
+        id: 1,
+        name: "app",
+        company_id: 1
+      });
+      var developerPromise =  db.developer.create({
+        id: 1,
+        first_name: "mohamed",
+        last_name: "mohamed",
+        email: "mohamed@gmail.com",
+        gender: "male",
+        company_id: 1
+      });
+      var userPromise =  db.user.create({
+        id: 1,
+        first_name: "mohamed",
+        last_name: "mohamed",
+        email: "ali@gmail.com",
+        gender: "male",
+        age: 30,
+        is_online: true,
+        application_id: 1
+      });
+      var chatPromise =  db.chat.create({
+        id: 1,
+        user_id: 1,
+        developer_id: 1,
+        application_id: 1
+      });
+      var message1Promise =  db.message.create({
+        id: 1,
+        content: 'hi',
+        chat_id: 1,
+        is_client: false
+      });
+      var message2Promise =  db.message.create({
+        id: 2,
+        content: 'hi there',
+        chat_id: 1,
+        is_client: true
+      });
+
+      Promise.all([companyPromise,applicationPromise,developerPromise,userPromise,chatPromise,message1Promise,message2Promise])
+      .then(() => {
+        var chatId = null;
+        var offset = 0;
+        var limit = 1;
+        var messageDto1 = {
+          id: 1,
+          content: 'hi',
+          is_client: false,
+          fromId: 1,
+          toId: 1,
+          senderEmail: "mohamed@gmail.com",
+          attachment: null
+        };
+        var messageDto2 = {
+          id: 2,
+          content: 'hi threre',
+          is_client: true,
+          fromId: 1,
+          toId: 1,
+          senderEmail: "ali@gmail.com",
+          attachment: null
+        };
+        var expected = {
+          success: false,
+          msg: 'There is no chat with id null'
+        };
+        var expectedSize = 1;
+        var url = `/chat/${chatId}/messages?offset=${offset}&limit=${limit}`;
+        db
+        chai.request(server)
+          .get(url)
+          .end(function(err, res){
+
+            res.should.have.status(500);
+            res.body.should.be.eql(expected);
+            done();
+          });
+      });
+
+    });
+
+
     it('should search for term in chat messages /chat/1/search?term=hi GET', function(done) {
         var messageDto = {
           id: 1,
@@ -635,4 +952,5 @@ describe("Chat controller", function(){
             done();
           });
       });
+
 });

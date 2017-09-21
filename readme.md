@@ -16,7 +16,7 @@ It is a node js chat server application for establishing a chat between develope
 
 # Installation
     # Manual run
-    1- prerequisite: nodejs, npm, nginx or apache , elasticsearch, mysql
+    1- prerequisite: nodejs >= (8.4.0), npm, nginx or apache , elasticsearch, mysql
     2- cd backend
     3- npm install
     4- create database called chat (or whatever you want)
@@ -31,7 +31,7 @@ It is a node js chat server application for establishing a chat between develope
     #run using docker
     1- prerequisite: docker, docker-compose
     2- run the following command -> docker-compose up
-    3- make sure that the ports 3000, 9200, 9300 is free to use or you can modify docker compose file to expose different ports
+    3- make sure that the ports 3000, 9200, 9300, 8080 is free to use or you can modify docker compose file to expose different ports
     
 To switch between environment just put environment variable :
 ```sh
