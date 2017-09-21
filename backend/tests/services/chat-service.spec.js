@@ -1,3 +1,5 @@
+'use strict';
+
 process.env.NODE_ENV = 'test';
 
 var chai = require('chai');
@@ -314,7 +316,7 @@ describe("Chat service", function(){
 
     });
 
-  
+
 
 
     it('should get chat instace for user',  function(done) {

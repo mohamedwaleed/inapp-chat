@@ -4,9 +4,7 @@ var chatService = require('../services/chat-service');
 var userService = require('../services/user-service');
 
 module.exports = function(io) {
-
-
-    chatService.receiveConnections(io, async (socket)=>{
+    chatService.receiveConnections(io, async (socket) => {
         var handshakeData = socket.request;
 
 
@@ -23,10 +21,9 @@ module.exports = function(io) {
         await userService.updateUserStatus(true, user_email);
 
         io.to(roomNumber).emit('user_id', user.id);
-        chatService.receiveDisconnections(socket, ()=>{
+        chatService.receiveDisconnections(socket, () => {
             console.log('user disconnected');
             userService.updateUserStatus(false, user_email);
         });
     });
-
 }

@@ -1,3 +1,5 @@
+'use strict';
+
 var db = require('../models');
 var tokenUtil = require('../helpers/token-utility');
 var elasticSearch = require('../services/elasticsearch-service');

@@ -35,5 +35,8 @@ services:
     ports:
       - "9200:9200"
       - "9300:9300"
-
-
+  
+  smallclient:
+    build: ./small-client
+    ports:
+      - "8080:80"
