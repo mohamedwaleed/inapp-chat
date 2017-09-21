@@ -10,6 +10,8 @@ WORKDIR /home/backend
 RUN chmod 777 -R /home/backend \
 	&& chmod 777  /home/start.sh \
 	&& apt-get update \
-	&& apt-get install -y mysql-client
+	&& apt-get install -y mysql-client \
+	&& npm install -g npm@4.6.1 \
+	&& npm install
 EXPOSE 3000
 ENTRYPOINT ["/home/start.sh"]
