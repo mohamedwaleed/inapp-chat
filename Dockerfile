@@ -9,5 +9,7 @@ COPY start.sh /home
 WORKDIR /home/backend
 RUN chmod 777 -R /home/backend
 RUN chmod 777  /home/start.sh
+RUN apt-get update \
+	&& apt-get install -y mysql-client
 EXPOSE 3000
 ENTRYPOINT ["/home/start.sh"]
