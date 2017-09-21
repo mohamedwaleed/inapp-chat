@@ -7,11 +7,8 @@ var clientIo = require('socket.io-client');
 const db = require('../../models');
 var should = chai.should();
 var expect = chai.expect;
-var chatService = require('../../services/chat-service');
-var elasticSearch = require('../../services/elasticsearch-service');
-const socketPort = 8000;
-const socketURL = `http://localhost:${socketPort}`;
-var server = null;
+var userService = require('../../services/user-service');
+
 describe("Chat service", function(){
 
 
@@ -215,8 +212,6 @@ describe("Chat service", function(){
     });
 
     beforeEach(function(done) {
-         server = app.Server();
-        server.listen(socketPort)
 
         var companyPromise =  db.sequelize.query("delete from company");
         var applicationPromise =  db.sequelize.query("delete from application");
@@ -232,30 +227,115 @@ describe("Chat service", function(){
     });
 
     afterEach(function() {
-      server.close();
+
     });
 
-    it('should receive new connection from clients',  function(done) {
 
-      var io = require('socket.io')(server);
-        var options ={
-        transports: ['websocket'],
-        'force new connection': true
+    it('should update user status',  function(done) {
+      var companyPromise  =  db.company.create({
+        id: 1,
+        name: "app"
+      });
+
+      var applicationPromise =  db.application.create({
+        id: 1,
+        name: "app",
+        company_id: 1
+      });
+      var developerPromise =  db.developer.create({
+        id: 1,
+        first_name: "mohamed",
+        last_name: "mohamed",
+        email: "mohamed@gmail.com",
+        gender: "male",
+        company_id: 1
+      });
+      var userPromise =  db.user.create({
+        id: 1,
+        first_name: "mohamed",
+        last_name: "mohamed",
+        email: "ali@gmail.com",
+        gender: "male",
+        age: 30,
+        is_online: false,
+        application_id: 1
+      });
+      Promise.all([companyPromise,applicationPromise,developerPromise,userPromise])
+      .then(()=>{
+        var expectedAffectedRows = 1;
+
+        userService.updateUserStatus(true, "ali@gmail.com").then((affectedRows)=>{
+          expect(affectedRows).to.equal(expectedAffectedRows);
+          done();
+        });
+
+      });
+
+
+    });
+
+
+    it('should find user or developer from database',  function(done) {
+      var companyPromise  =  db.company.create({
+        id: 1,
+        name: "app"
+      });
+
+      var applicationPromise =  db.application.create({
+        id: 1,
+        name: "app",
+        company_id: 1
+      });
+      var developerPromise =  db.developer.create({
+        id: 1,
+        first_name: "mohamed",
+        last_name: "mohamed",
+        email: "mohamed@gmail.com",
+        gender: "male",
+        company_id: 1
+      });
+      var userPromise =  db.user.create({
+        id: 1,
+        first_name: "mohamed",
+        last_name: "mohamed",
+        email: "ali@gmail.com",
+        gender: "male",
+        age: 30,
+        is_online: false,
+        application_id: 1
+      });
+      Promise.all([companyPromise,applicationPromise,developerPromise,userPromise])
+      .then(()=>{
+        var expectedAffectedRows = 1;
+        var expected = {
+          id: 1,
+          first_name: "mohamed",
+          last_name: "mohamed",
+          email: "ali@gmail.com",
+          gender: "male",
+          age: 30,
+          is_online: false,
+          application_id: 1
         };
-        var appId = 1;
-        var clientId = 1;
-        chatService.receiveConnections(io, function(socket){
-          expect(socket).to.not.equal(null);
-          socket.disconnect();
+        userService.findUser("ali@gmail.com",1,true).then((user)=>{
+          expect(user).to.not.equal(null);
+          expect(user.id).to.equal(expected.id);
+          expect(user.first_name).to.equal(expected.last_name);
+          expect(user.last_name).to.equal(expected.last_name);
+          expect(user.email).to.equal(expected.email);
+          expect(user.gender).to.equal(expected.gender);
+          expect(user.age).to.equal(expected.age);
+          expect(user.is_online).to.equal(expected.is_online);
+          expect(user.application_id).to.equal(expected.application_id);
           done();
         });
-       clientIo.connect(socketURL);
+
+      });
+
+
     });
 
-
-
-    it('should send message from developer to client',  function(done) {
-      var io = require('socket.io')(server);
+    it('should register user or developer in database',  function(done) {
       var companyPromise  =  db.company.create({
         id: 1,
         name: "app"
@@ -266,170 +346,22 @@ describe("Chat service", function(){
         name: "app",
         company_id: 1
       });
-      var developerPromise =  db.developer.create({
-        id: 1,
-        first_name: "mohamed",
-        last_name: "mohamed",
-        email: "mohamed@gmail.com",
-        gender: "male",
-        company_id: 1
-      });
-      var userPromise =  db.user.create({
-        id: 1,
-        first_name: "mohamed",
-        last_name: "mohamed",
-        email: "ali@gmail.com",
-        gender: "male",
-        age: 30,
-        is_online: true,
-        application_id: 1
-      });
-      var chatPromise =  db.chat.create({
-        id: 1,
-        user_id: 1,
-        developer_id: 1,
-        application_id: 1
-      });
-      Promise.all([companyPromise,applicationPromise,developerPromise,userPromise,chatPromise])
+
+      Promise.all([companyPromise,applicationPromise])
       .then(()=>{
-        var message = {
-          fromId: 1,
-          toId: 1,
-          content: 'hi',
-          appId: 1,
-          isClient: false,
-          attachment: null
+        var expectedAffectedRows = 1;
+        var expected = {
+          id: 1,
+          email: "ali@gmail.com",
+          is_online: false,
+          application_id: 1
         };
-        var expectedMessageId = 1;
-        var expectedContent = 'hi';
-
-        chatService.sendMessage(message, io).then((createdMessage)=>{
-          expect(createdMessage).to.not.equal(null);
-          expect(createdMessage.content).to.equal(expectedContent);
-          done();
-        });
-
-      });
-
-
-    });
-
-  
-
-
-    it('should get chat instace for user',  function(done) {
-      var io = require('socket.io')(server);
-      var companyPromise  =  db.company.create({
-        id: 1,
-        name: "app"
-      });
-
-      var applicationPromise =  db.application.create({
-        id: 1,
-        name: "app",
-        company_id: 1
-      });
-      var developerPromise =  db.developer.create({
-        id: 1,
-        first_name: "mohamed",
-        last_name: "mohamed",
-        email: "mohamed@gmail.com",
-        gender: "male",
-        company_id: 1
-      });
-      var userPromise =  db.user.create({
-        id: 1,
-        first_name: "mohamed",
-        last_name: "mohamed",
-        email: "ali@gmail.com",
-        gender: "male",
-        age: 30,
-        is_online: true,
-        application_id: 1
-      });
-      var chatPromise =  db.chat.create({
-        id: 1,
-        user_id: 1,
-        developer_id: 1,
-        application_id: 1
-      });
-      Promise.all([companyPromise,applicationPromise,developerPromise,userPromise,chatPromise])
-      .then(()=>{
-        var expectedChatLength = 1;
-        var expectedId = 1;
-        var userId =  1;
-        var isClient = true;
-
-        chatService.getChatInstances(userId, isClient).then((chats)=>{
-          expect(chats.length).to.equal(expectedChatLength);
-          expect(chats[0].id).to.equal(expectedId);
-          done();
-        });
-
-      });
-
-
-    });
-
-    it('should get all chat messages',  function(done) {
-      var io = require('socket.io')(server);
-      var companyPromise  =  db.company.create({
-        id: 1,
-        name: "app"
-      });
-
-      var applicationPromise =  db.application.create({
-        id: 1,
-        name: "app",
-        company_id: 1
-      });
-      var developerPromise =  db.developer.create({
-        id: 1,
-        first_name: "mohamed",
-        last_name: "mohamed",
-        email: "mohamed@gmail.com",
-        gender: "male",
-        company_id: 1
-      });
-      var userPromise =  db.user.create({
-        id: 1,
-        first_name: "mohamed",
-        last_name: "mohamed",
-        email: "ali@gmail.com",
-        gender: "male",
-        age: 30,
-        is_online: true,
-        application_id: 1
-      });
-      var chatPromise =  db.chat.create({
-        id: 1,
-        user_id: 1,
-        developer_id: 1,
-        application_id: 1
-      });
-      var message1Promise =  db.message.create({
-        id: 1,
-        content: 'hi',
-        chat_id: 1,
-        is_client: false
-      });
-      var message2Promise =  db.message.create({
-        id: 2,
-        content: 'hi there',
-        chat_id: 1,
-        is_client: true
-      });
-      Promise.all([companyPromise,applicationPromise,developerPromise,userPromise,chatPromise,message1Promise,message2Promise])
-      .then(()=>{
-        var expectedMessagesLength = 2;
-        var expectedId1 = 1;
-        var expectedId2 = 2;
-        var chatId = 1;
-
-        chatService.getChatMessages(chatId).then((messages)=>{
-          expect(messages.length).to.equal(expectedMessagesLength);
-          expect(messages[0].id).to.equal(expectedId1);
-          expect(messages[1].id).to.equal(expectedId2);
+        userService.registerUser("ali@gmail.com",1,true).then((user)=>{
+          expect(user).to.not.equal(null);
+          expect(user.id).to.not.equal(null);
+          expect(user.email).to.equal(expected.email);
+          expect(user.is_online).to.equal(expected.is_online);
+          expect(user.application_id).to.equal(expected.application_id);
           done();
         });
 

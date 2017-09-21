@@ -1,6 +1,7 @@
 var db = require('../models');
 var tokenUtil = require('../helpers/token-utility');
 var elasticSearch = require('../services/elasticsearch-service');
+var userService = require('../services/user-service');
 var fs = require('fs');
 
 class ChatService {
@@ -17,26 +18,6 @@ class ChatService {
     }
 
 
-
-    updateUserStatus(status=false, email) {
-        var result = db.user.update({is_online: status}, {where: {email:email}}).then(res=>JSON.parse(res));
-        return result;
-    }
-
-
-    findUser(email, app_id, isClient) {
-        if(isClient){
-           return db.user.findOne({where:{email:email, application_id: app_id}});
-        }
-        return db.developer.findOne({where:{email:email, application_id: app_id}});
-    }
-
-    registerUser(email, app_id, isClient) {
-        if(isClient){
-            return db.user.create({email:email, application_id: app_id});
-        }
-        return db.developer.create({email:email, application_id: app_id});
-    }
 
     async sendMessage(message, socketIo) {
 

@@ -1,6 +1,7 @@
 'use strict';
 
 var chatService = require('../services/chat-service');
+var userService = require('../services/user-service');
 
 module.exports = function(io) {
 
@@ -14,17 +15,17 @@ module.exports = function(io) {
         var isClient = handshakeData._query['is_client'];
 
         // it is better to use caching database (redis) for fast retrieval
-        var user = await chatService.findUser(user_email, roomNumber, isClient);
+        var user = await userService.findUser(user_email, roomNumber, isClient);
         if(!user){
-            user = await chatService.registerUser(user_email, roomNumber, isClient);
+            user = await userService.registerUser(user_email, roomNumber, isClient);
         }
         socket.join(roomNumber);
-        await chatService.updateUserStatus(true, user_email);
+        await userService.updateUserStatus(true, user_email);
 
         io.to(roomNumber).emit('user_id', user.id);
         chatService.receiveDisconnections(socket, ()=>{
             console.log('user disconnected');
-            chatService.updateUserStatus(false, user_email);
+            userService.updateUserStatus(false, user_email);
         });
     });
 
